@@ -26,6 +26,12 @@ class Liquid:
         self.display = display
         self.frame = pygame.image.load('Images\Frame.png')
         self.start = False
+    
+    def update(self):
+        if self.currentHeight > self.holes[0]:
+            self.currentHeight -= 0.15
+        if self.currentHeight < self.holes[0]:
+            self.currentHeight = self.holes[0]
 
     def defineHoles(self, *holes):
         self.holes = holes
@@ -46,7 +52,17 @@ class Liquid:
         self.display.blit(label, (32+(0.5*length), self.eachHeight[1]-self.height*self.centimeter*5))
         amount = (self.radius**2)*3.14*self.currentHeight
         txt = self.font.render(f'{amount:.2f} L', False, (0, 0, 0))
-        self.display.blit(txt, (32+(txt.get_size()[0]/2), self.eachHeight[1]-self.height*self.centimeter*5))
+        self.display.blit(txt, (32+length-(0.5*txt.get_size()[0]), self.eachHeight[1]-self.height*self.centimeter*5))
+        alt = 20
+        txt = self.font.render('Altura dos furos', False, (0, 0, 0))
+        pygame.draw.rect(self.display, (255, 255, 255), pygame.Rect(self.disSize[0]-txt.get_size()[0]-5, alt, txt.get_size()[0]+10, alt*5+2))
+        self.display.blit(txt, (self.disSize[0]-txt.get_size()[0], alt))
+        for i in self.holes:
+            alt += 20
+            txt = self.font.render(f'{i:.2f}cm', False, (0, 0, 0))
+            self.display.blit(txt, (self.disSize[0]-txt.get_size()[0], alt))
+        #self.display.blit(self.font.render(txt, False, (255, 255, 255)), (self.disSize[0]-txt.get_size()[0], 20))
+        #pygame.draw.rect(self.display, (255, 255, 255), pygame.Rect(self.disSize[0]-104, 20, 100, 50))
 
     def putOnScreen(self):
         self.display.blit(self.frame, (0, 0))
