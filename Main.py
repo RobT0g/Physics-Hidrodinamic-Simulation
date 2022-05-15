@@ -15,6 +15,7 @@ pygame.time.set_timer(update, refresh)
 display = pygame.display.set_mode((screen_width, screen_height))        # tela definida
 pygame.display.set_caption('Hidrodinamics')                             # legenda da tela
 liq = Liquid(15, 10, 15, display)
+#liq.defineHoles(12, 20, 45)
 liq.putOnScreen()
 
 running = True                      # Variável de looping

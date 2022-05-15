@@ -1,40 +1,59 @@
-from sys import displayhook
+from audioop import reverse
+import math
 import pygame
 from pygame.locals import *
 
 class Liquid:
     def __init__(self, amount, radius, baseHeight, display):
-        self.disSize = (30*32, 15*32)
-        self.centimeter = 6
+        self.disSize = (30*32, 15*32)                   # Dimensões da tela sem a borda (px)
+        self.centimeter = 6                             # Razão pixels/cm
 
         # Líquido
-        self.amount = amount 
-        self.radius = radius/10
-        self.height = amount/(3.14*(self.radius**2))
-        self.currentHeight = self.height
+        self.amount = amount                            # Quantidade de líquido (L)
+        self.radius = radius/10                         # Raio do recipiente (dm)
+        self.height = amount/(3.14*(self.radius**2))    # Altura do volume de líquido inicial (dm)
+        self.currentHeight = self.height                # Altura do volume de líquido instantâneo (dm)
 
         # Base
-        self.baseHeight = baseHeight
-        self.eachHeight = (self.disSize[1]+16, self.disSize[1]+16-(self.baseHeight*self.centimeter))
-        self.base = pygame.Surface((self.radius*25*self.centimeter, self.baseHeight*self.centimeter))
+        self.baseHeight = baseHeight                    # Altura da base em que está o recipiente (cm)
+        self.eachHeight = (self.disSize[1]+16, self.disSize[1]+16-(self.baseHeight*self.centimeter))    # Altura do chão e da superficie da base (px)
+        self.base = pygame.Surface((self.radius*25*self.centimeter, self.baseHeight*self.centimeter))   
         pygame.draw.rect(self.base, (210, 105, 30), pygame.Rect(0, 0, self.radius*25*self.centimeter, self.baseHeight*self.centimeter))
         pygame.draw.line(self.base, (0, 0, 0), (0, 0), (self.radius*25*self.centimeter, 0))
         pygame.draw.line(self.base, (0, 0, 0), (self.radius*25*self.centimeter-1, 0), (self.radius*25*self.centimeter-1, self.baseHeight*self.centimeter))
         
-        self.holes = [i*(self.height/5) for i in range(1, 5)]
+        self.holes = [i*(self.height/5) for i in range(1, 5)]                   # Altura dos buracos em relação ao recipiente (dm)
+        self.holesHeights = [(i*10 + self.baseHeight)/100 for i in self.holes]  # Altura dos buracos em relação ao chão (m)
+        self.times = [math.sqrt(2*i/9.8) for i in self.holesHeights]            # Tempo de caída da altura de um buraco até o chão (s)
+        self.pressures = [101325 + 997*9.8*((self.currentHeight/10)-i) for i in self.holesHeights]   # Pressão da água em cada buraco (Pa)
+        self.c = 101325 + 997*9.8*((self.height/10) + self.baseHeight/100)
+        for k, v in enumerate(self.holesHeights):
+            print(2*(self.c-self.pressures[k]-997*9.8*v)/997)
+        self.vels = [math.sqrt(2*(self.c-self.pressures[k]-997*9.8*v)/997) for k, v in enumerate(self.holesHeights)]
+        print(self.vels)
+        self.flow = 0
         self.font = pygame.font.SysFont('Times New Roman', 18)
         self.display = display
         self.frame = pygame.image.load('Images\Frame.png')
         self.start = False
     
     def update(self):
+        if not self.start:
+            return
+        self.updatePressure()
         if self.currentHeight > self.holes[0]:
             self.currentHeight -= 0.15
-        if self.currentHeight < self.holes[0]:
-            self.currentHeight = self.holes[0]
+    
+    def updatePressure(self):
+        self.pressures = [101325 + 997*9.8*(self.currentHeight-i) for i in self.holesHeights]
+        
 
     def defineHoles(self, *holes):
-        self.holes = holes
+        self.holes = []
+        for i in holes:
+            self.holes.append((i-self.baseHeight)/(self.centimeter*10))
+        self.holesHeights = [(i*self.centimeter*10 + self.baseHeight)/100 for i in self.holes]
+        self.times = [math.sqrt(2*i/9.8) for i in self.holesHeights]
 
     def getLiquid(self):
         a = pygame.Surface((self.radius*self.centimeter*20 + 2, self.currentHeight*self.centimeter*10))
@@ -56,13 +75,12 @@ class Liquid:
         alt = 20
         txt = self.font.render('Altura dos furos', False, (0, 0, 0))
         pygame.draw.rect(self.display, (255, 255, 255), pygame.Rect(self.disSize[0]-txt.get_size()[0]-5, alt, txt.get_size()[0]+10, alt*5+2))
+        pygame.draw.rect(self.display, (0, 0, 0), pygame.Rect(self.disSize[0]-txt.get_size()[0]-5, alt, txt.get_size()[0]+10, alt*5+2), 1)
         self.display.blit(txt, (self.disSize[0]-txt.get_size()[0], alt))
-        for i in self.holes:
+        for i in self.holesHeights[::-1]:
             alt += 20
-            txt = self.font.render(f'{i:.2f}cm', False, (0, 0, 0))
+            txt = self.font.render(f'{(i*100):.2f}cm', False, (0, 0, 0))
             self.display.blit(txt, (self.disSize[0]-txt.get_size()[0], alt))
-        #self.display.blit(self.font.render(txt, False, (255, 255, 255)), (self.disSize[0]-txt.get_size()[0], 20))
-        #pygame.draw.rect(self.display, (255, 255, 255), pygame.Rect(self.disSize[0]-104, 20, 100, 50))
 
     def putOnScreen(self):
         self.display.blit(self.frame, (0, 0))
