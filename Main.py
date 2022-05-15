@@ -16,7 +16,6 @@ running = True                      # Variável de looping
 while running:                      # looping
     for e in pygame.event.get():
         if e.type == pygame.MOUSEBUTTONDOWN:
-            liq.currentHeight = 3
-            liq.putOnScreen()
+            liq.start = True
         if pygame.key.get_pressed()[pygame.K_ESCAPE] or e.type == QUIT:
             running = False
