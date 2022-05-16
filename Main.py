@@ -7,7 +7,7 @@ pygame.init()                                                           # inicia
 screen_width = 31*32                                                    # largura da tela
 screen_height = 16*32                                                   # altura da tela
 
-refresh = 200
+refresh = 100
 clock = pygame.time.Clock() 
 update = pygame.USEREVENT + 1
 pygame.time.set_timer(update, refresh)
