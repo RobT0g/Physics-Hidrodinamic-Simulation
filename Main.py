@@ -13,9 +13,9 @@ update = pygame.USEREVENT + 1
 pygame.time.set_timer(update, refresh)
 
 display = pygame.display.set_mode((screen_width, screen_height))        # tela definida
-pygame.display.set_caption('Hidrodinamics')                             # legenda da tela
-liq = Liquid(15, 10, 15, display)
-#liq.defineHoles(12, 20, 45)
+pygame.display.set_caption('Hidrodinamics')   
+liqSpec = (20, 10, 10, display)    #amount, radius, baseHeight, display 
+liq = Liquid(*liqSpec)
 liq.putOnScreen()
 
 running = True                      # Variável de looping
@@ -26,5 +26,7 @@ while running:                      # looping
             liq.putOnScreen()
         if e.type == pygame.MOUSEBUTTONDOWN:
             liq.start = True
+            if liq.finished:
+                liq = Liquid(*liqSpec)
         if pygame.key.get_pressed()[pygame.K_ESCAPE] or e.type == QUIT:
             running = False

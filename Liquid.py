@@ -30,12 +30,16 @@ class Liquid:
         self.display = display
         self.frame = pygame.image.load('Images\Frame.png')
         self.start = False
+        self.finished = False
     
     def update(self):
-        if not self.start:
+        if not self.start or self.finished:
             return
         if self.currentHeight > self.holes[0]:
             self.currentHeight -= self.flow
+        else:
+            self.finished = True
+            return
         self.updatePressure()
 
     def updatePressure(self):
@@ -50,8 +54,8 @@ class Liquid:
     def defineHoles(self, *holes):
         self.holes = []
         for i in holes:
-            self.holes.append((i-self.baseHeight)/(self.centimeter*10))
-        self.holesHeights = [(i*self.centimeter*10 + self.baseHeight)/100 for i in self.holes]
+            self.holes.append(i/10)
+        self.holesHeights = [(i*10 + self.baseHeight)/100 for i in self.holes]
         self.times = [math.sqrt(2*i/9.8) for i in self.holesHeights]
 
     def getLiquid(self):
@@ -71,17 +75,32 @@ class Liquid:
         amount = (self.radius**2)*3.14*self.currentHeight
         txt = self.font.render(f'{amount:.2f} L', False, (0, 0, 0))
         self.display.blit(txt, (32+length-(0.5*txt.get_size()[0]), self.eachHeight[1]-self.height*self.centimeter*5))
-        alt = 20
-        txt = self.font.render('Altura dos furos', False, (0, 0, 0))
-        pygame.draw.rect(self.display, (255, 255, 255), pygame.Rect(self.disSize[0]-txt.get_size()[0]-5, alt, txt.get_size()[0]+10, alt*6+2))
-        pygame.draw.rect(self.display, (0, 0, 0), pygame.Rect(self.disSize[0]-txt.get_size()[0]-5, alt, txt.get_size()[0]+10, alt*6+2), 1)
-        self.display.blit(txt, (self.disSize[0]-txt.get_size()[0], alt))
-        for i in self.holesHeights[::-1]:
-            alt += 20
-            txt = self.font.render(f'{(i*100):.2f}cm', False, (0, 0, 0))
-            self.display.blit(txt, (self.disSize[0]-txt.get_size()[0], alt))
+        txt = self.font.render(f'Altura Inicial: {self.height*10:.2f}cm', False, (0, 0, 0))
+        pygame.draw.rect(self.display, (255, 255, 255), pygame.Rect((self.radius*self.centimeter*20) + 44, 32, txt.get_size()[0]+6, 62))
+        pygame.draw.rect(self.display, (0, 0, 0), pygame.Rect((self.radius*self.centimeter*20) + 44, 32, txt.get_size()[0]+6, 62), 2)
+        self.display.blit(txt, ((self.radius*self.centimeter*20) + 47, 32))
+        txt = self.font.render(f'Altura atual: {self.currentHeight*10:.2f}cm', False, (0, 0, 0))
+        self.display.blit(txt, ((self.radius*self.centimeter*20) + 47, 52))
         txt = self.font.render(f'Vazão: {(self.flow*10):.2f}L/s', False, (0, 0, 0))
-        self.display.blit(txt, (self.disSize[0]-txt.get_size()[0], alt+20))
+        self.display.blit(txt, ((self.radius*self.centimeter*20) + 47, 72))
+        txt = self.font.render(' Furo  Altura   Vel.  ', False, (0, 0, 0))
+        tablesize = (txt.get_size()[0], (len(self.holes)+1)*20)
+        tablepos = (self.disSize[0]-txt.get_size()[0]+10, 20)
+        table = pygame.Surface(tablesize)
+        pygame.draw.rect(table, (255, 255, 255), pygame.Rect(0, 0, txt.get_size()[0], (len(self.holes)+1)*20))
+        pygame.draw.rect(table, (0, 0, 0), pygame.Rect(0, 0, txt.get_size()[0], (len(self.holes)+1)*20), 2)
+        pygame.draw.line(table, (0, 0, 0), (44, 0), (44, (len(self.holes)+1)*20+20), 2)
+        pygame.draw.line(table, (0, 0, 0), (100, 0), (100, (len(self.holes)+1)*20+20), 2)
+        self.display.blit(table, tablepos)
+        self.display.blit(txt, (self.disSize[0]-txt.get_size()[0]+12, 20))
+        for k, v in enumerate(self.holes):
+            txt = self.font.render(f'{k+1}', False, (0, 0, 0))
+            self.display.blit(txt, (tablepos[0]+5, (k+2)*20))
+            txt = self.font.render(f'{v*10+self.baseHeight:.2f}', False, (0, 0, 0))
+            self.display.blit(txt, (tablepos[0]+49, (k+2)*20))
+            txt = self.font.render(f'{self.vels[k]:.2f}', False, (0, 0, 0))
+            self.display.blit(txt, (tablepos[0]+110, (k+2)*20))
+            pygame.draw.line(self.display, (0, 0, 0), (tablepos[0], (k+2)*20), (tablepos[0]+tablesize[0], (k+2)*20))
 
     def drawTrajectories(self):
         for k, v in enumerate(self.reach):
