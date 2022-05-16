@@ -45,7 +45,8 @@ class Liquid:
 
     def updatePressure(self):
         self.times = [math.sqrt(2*i/9.8) for i in self.holesHeights]            # Tempo de caída da altura de um buraco até o chão (s)
-        self.pressures = [101325 + 997*9.8*((self.currentHeight/10)-i) for i in self.holesHeights]   # Pressão da água em cada buraco (Pa)
+        self.pressures = [101325 + (997*9.8*((self.currentHeight/10)-i) if self.currentHeight*10 > self.holesHeights[k]*100-self.baseHeight else 0) 
+            for k, i in enumerate(self.holesHeights)]   # Pressão da água em cada buraco (Pa)
         self.vels = [math.sqrt(2*9.8*((self.currentHeight/10)+(self.baseHeight/100)-v)) if (self.currentHeight/10)+(self.baseHeight/100) >= v else 0 for k, v in enumerate(self.holesHeights)]
         self.flow = 0                                                           # Fluxo de água total (L/s)
         self.reach = [v*self.times[k] for k, v in enumerate(self.vels)]         # Alcance de cada jato (m)
@@ -84,7 +85,7 @@ class Liquid:
         self.display.blit(txt, ((self.radius*self.centimeter*20) + 47, 52))
         txt = self.font.render(f'Vazão: {(self.flow*10):.2f}L/s', False, (0, 0, 0))
         self.display.blit(txt, ((self.radius*self.centimeter*20) + 47, 72))
-        txt = self.font.render(' Furo  Altura   Vel.  ', False, (0, 0, 0))
+        txt = self.font.render(' Furo  Press   Vel.  ', False, (0, 0, 0))
         tablesize = (txt.get_size()[0], (len(self.holes)+1)*20)
         tablepos = (self.disSize[0]-txt.get_size()[0]+10, 20)
         table = pygame.Surface(tablesize)
@@ -97,10 +98,10 @@ class Liquid:
         for k, v in enumerate(self.holes):
             txt = self.font.render(f'{k+1}', False, (0, 0, 0))
             self.display.blit(txt, (tablepos[0]+5, (k+2)*20))
-            txt = self.font.render(f'{v*10+self.baseHeight:.2f}', False, (0, 0, 0))
+            txt = self.font.render(f'{self.pressures[k]/1000:.2f}', False, (0, 0, 0))
             self.display.blit(txt, (tablepos[0]+49, (k+2)*20))
             txt = self.font.render(f'{self.vels[k]:.2f}', False, (0, 0, 0))
-            self.display.blit(txt, (tablepos[0]+110, (k+2)*20))
+            self.display.blit(txt, (tablepos[0]+107, (k+2)*20))
             pygame.draw.line(self.display, (0, 0, 0), (tablepos[0], (k+2)*20), (tablepos[0]+tablesize[0], (k+2)*20))
 
     def drawTrajectories(self):
