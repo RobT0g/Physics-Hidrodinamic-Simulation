@@ -31,9 +31,10 @@ class Liquid:
         self.frame = pygame.image.load('Images\Frame.png')
         self.start = False
         self.finished = False
+        self.pause = False
     
     def update(self):
-        if not self.start or self.finished:
+        if not self.start or self.finished or self.pause:
             return
         if self.currentHeight > self.holes[0]:
             self.currentHeight -= self.flow

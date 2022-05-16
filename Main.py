@@ -25,8 +25,12 @@ while running:                      # looping
             liq.update()
             liq.putOnScreen()
         if e.type == pygame.MOUSEBUTTONDOWN:
-            liq.start = True
+            if not liq.start:
+                liq.start = True
+                continue
             if liq.finished:
                 liq = Liquid(*liqSpec)
+            else:
+                liq.pause = not liq.pause
         if pygame.key.get_pressed()[pygame.K_ESCAPE] or e.type == QUIT:
             running = False
