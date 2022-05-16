@@ -23,7 +23,6 @@ class Liquid:
         pygame.draw.rect(self.base, (210, 105, 30), pygame.Rect(0, 0, self.radius*25*self.centimeter, self.baseHeight*self.centimeter))
         pygame.draw.line(self.base, (0, 0, 0), (0, 0), (self.radius*25*self.centimeter, 0))
         pygame.draw.line(self.base, (0, 0, 0), (self.radius*25*self.centimeter-1, 0), (self.radius*25*self.centimeter-1, self.baseHeight*self.centimeter))
-        
         self.holes = [i*(self.height/5) for i in range(1, 5)]                   # Altura dos buracos em relação ao recipiente (dm)
         self.holesHeights = [(i*10 + self.baseHeight)/100 for i in self.holes]  # Altura dos buracos em relação ao chão (m)
         self.updatePressure()
@@ -88,16 +87,16 @@ class Liquid:
         for k, v in enumerate(self.reach):
             if v == 0:
                 continue
-            instr = v*100/6
-            reaches = [i*instr for i in range(int(instr)+1)]
-            pos = [(self.radius*self.centimeter*20) + 32, self.eachHeight[1]-(v*10*self.centimeter)]
+            instr = v*10
+            time = self.times[k]/10
+            reaches = [i*instr for i in range(11)]
+            pos = [(self.radius*self.centimeter*20) + 32, self.eachHeight[1]-(self.holes[k]*self.centimeter*10)]
             vy = 0
-            for k1, v1 in enumerate(reaches):
-                time = (v1/100-(reaches[k1-1]/100 if k1 != 0 else 0)/self.vels[k])
-                posx = [pos[0]+self.vels[k]*time*100*self.centimeter, pos[1]] #+ vy*time*100*self.centimeter + (9.8*time)*100*self.centimeter/2]
+            for k1, v1 in enumerate(reaches[:-1]):
+                posx = [pos[0] + instr*self.centimeter, pos[1] + (vy*time)*100*self.centimeter + (9.8*(time**2))*100*self.centimeter/2]
                 pygame.draw.line(self.display, (156, 211, 219), pos, posx)
                 pos = posx[:]
-                vy += (9.8*time)/2
+                vy += (9.8*time)
 
     def putOnScreen(self):
         self.display.blit(self.frame, (0, 0))
@@ -108,7 +107,6 @@ class Liquid:
             pygame.draw.line(self.display, ((156, 211, 219) if self.currentHeight >= i else (38,50,56)), 
                 ((self.radius*self.centimeter*20) + 31, self.eachHeight[1]-(i*self.centimeter*10)), 
                 ((self.radius*self.centimeter*20) + 33, self.eachHeight[1]-(i*self.centimeter*10)), 3)
-            #pygame.draw.line(self.display, (156, 211, 219), ((self.radius*self.centimeter*20) + 32, self.eachHeight[1]-i*10*self.centimeter), (self.reach[k]*100*self.centimeter+32+self.radius*20*self.centimeter, self.disSize[1]+16))
         self.drawTrajectories()
         self.showValues()
         pygame.display.flip()
