@@ -57,9 +57,11 @@ class Liquid:
     def defineHoles(self, *holes):
         self.holes = []
         for i in holes:
-            self.holes.append(i/10)
+            if i < self.height*10:
+                self.holes.append(i/10)
         self.holesHeights = [(i*10 + self.baseHeight)/100 for i in self.holes]
         self.times = [math.sqrt(2*i/9.8) for i in self.holesHeights]
+        self.updatePressure()
     
     def defineHoleRad(self, radius):
         self.holeRadius = radius/1000
@@ -102,9 +104,9 @@ class Liquid:
         for k, v in enumerate(self.holes):
             txt = self.font.render(f'{k+1}', False, (0, 0, 0))
             self.display.blit(txt, (tablepos[0]+5, (k+2)*20))
-            txt = self.font.render(f'{self.pressures[3-k]/1000:.2f}', False, (0, 0, 0))
+            txt = self.font.render(f'{self.pressures[(len(self.holes)-1)-k]/1000:.2f}', False, (0, 0, 0))
             self.display.blit(txt, (tablepos[0]+49, (k+2)*20))
-            txt = self.font.render(f'{self.vels[3-k]:.2f}', False, (0, 0, 0))
+            txt = self.font.render(f'{self.vels[(len(self.holes)-1)-k]:.2f}', False, (0, 0, 0))
             self.display.blit(txt, (tablepos[0]+107, (k+2)*20))
             pygame.draw.line(self.display, (0, 0, 0), (tablepos[0], (k+2)*20), (tablepos[0]+tablesize[0], (k+2)*20))
             txt = self.font.render(f'{self.reach[k]*100:.2f}cm', False, (0, 0, 0))
