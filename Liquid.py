@@ -9,6 +9,7 @@ class Liquid:
     def __init__(self, amount, radius, baseHeight, display):
         self.disSize = (30*32, 15*32)                   # Dimensões da tela sem a borda (px)
         self.centimeter = 6                             # Razão pixels/cm
+        self.holeRadius = 0.008                         # Raio dos furos
 
         # Líquido
         self.amount = amount                            # Quantidade de líquido (L)
@@ -25,6 +26,7 @@ class Liquid:
         pygame.draw.line(self.base, (0, 0, 0), (self.radius*25*self.centimeter-1, 0), (self.radius*25*self.centimeter-1, self.baseHeight*self.centimeter))
         self.holes = [i*(self.height/5) for i in range(1, 5)]                   # Altura dos buracos em relação ao recipiente (dm)
         self.holesHeights = [(i*10 + self.baseHeight)/100 for i in self.holes]  # Altura dos buracos em relação ao chão (m)
+        self.times = [math.sqrt(2*i/9.8) for i in self.holesHeights]            # Tempo de caída da altura de um buraco até o chão (s)
         self.updatePressure()
         self.font = pygame.font.SysFont('Times New Roman', 18)
         self.display = display
@@ -32,7 +34,7 @@ class Liquid:
         self.start = False
         self.finished = False
         self.pause = False
-    
+
     def update(self):
         if not self.start or self.finished or self.pause:
             return
@@ -44,14 +46,13 @@ class Liquid:
         self.updatePressure()
 
     def updatePressure(self):
-        self.times = [math.sqrt(2*i/9.8) for i in self.holesHeights]            # Tempo de caída da altura de um buraco até o chão (s)
         self.pressures = [101325 + (997*9.8*((self.currentHeight/10)-i) if self.currentHeight*10 > self.holesHeights[k]*100-self.baseHeight else 0) 
             for k, i in enumerate(self.holesHeights)]   # Pressão da água em cada buraco (Pa)
         self.vels = [math.sqrt(2*9.8*((self.currentHeight/10)+(self.baseHeight/100)-v)) if (self.currentHeight/10)+(self.baseHeight/100) >= v else 0 for k, v in enumerate(self.holesHeights)]
         self.flow = 0                                                           # Fluxo de água total (L/s)
         self.reach = [v*self.times[k] for k, v in enumerate(self.vels)]         # Alcance de cada jato (m)
         for i in self.vels:
-            self.flow += (0.008**2)*3.14*i*1000*0.1
+            self.flow += (self.holeRadius**2)*3.14*i*1000*0.1
 
     def defineHoles(self, *holes):
         self.holes = []
@@ -59,6 +60,9 @@ class Liquid:
             self.holes.append(i/10)
         self.holesHeights = [(i*10 + self.baseHeight)/100 for i in self.holes]
         self.times = [math.sqrt(2*i/9.8) for i in self.holesHeights]
+    
+    def defineHoleRad(self, radius):
+        self.holeRadius = radius/1000
 
     def getLiquid(self):
         a = pygame.Surface((self.radius*self.centimeter*20 + 2, self.currentHeight*self.centimeter*10))
@@ -98,11 +102,15 @@ class Liquid:
         for k, v in enumerate(self.holes):
             txt = self.font.render(f'{k+1}', False, (0, 0, 0))
             self.display.blit(txt, (tablepos[0]+5, (k+2)*20))
-            txt = self.font.render(f'{self.pressures[k]/1000:.2f}', False, (0, 0, 0))
+            txt = self.font.render(f'{self.pressures[3-k]/1000:.2f}', False, (0, 0, 0))
             self.display.blit(txt, (tablepos[0]+49, (k+2)*20))
-            txt = self.font.render(f'{self.vels[k]:.2f}', False, (0, 0, 0))
+            txt = self.font.render(f'{self.vels[3-k]:.2f}', False, (0, 0, 0))
             self.display.blit(txt, (tablepos[0]+107, (k+2)*20))
             pygame.draw.line(self.display, (0, 0, 0), (tablepos[0], (k+2)*20), (tablepos[0]+tablesize[0], (k+2)*20))
+            txt = self.font.render(f'{self.reach[k]*100:.2f}cm', False, (0, 0, 0))
+            self.display.blit(txt, ((self.radius*self.centimeter*20) + 36 + self.reach[k]*100*self.centimeter, self.disSize[1]-(20*k)-4))
+            pygame.draw.line(self.display, (80, 80, 80), ((self.radius*self.centimeter*20) + 32 + self.reach[k]*100*self.centimeter, self.disSize[1]+15), 
+               ((self.radius*self.centimeter*20) + 32 + self.reach[k]*100*self.centimeter, self.disSize[1]-(20*k)-4), 1)
 
     def drawTrajectories(self):
         for k, v in enumerate(self.reach):
