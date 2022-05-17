@@ -7,33 +7,36 @@ from pygame.locals import *
 
 class Liquid:
     def __init__(self, amount, radius, baseHeight, display):
-        self.disSize = (30*32, 15*32)                   # Dimensões da tela sem a borda (px)
-        self.centimeter = 6                             # Razão pixels/cm
-        self.holeRadius = 0.008                         # Raio dos furos
+        try:
+            self.disSize = (30*32, 15*32)                   # Dimensões da tela sem a borda (px)
+            self.centimeter = 6                             # Razão pixels/cm
+            self.holeRadius = 0.008                         # Raio dos furos
 
-        # Líquido
-        self.amount = amount                            # Quantidade de líquido (L)
-        self.radius = radius/10                         # Raio do recipiente (dm)
-        self.height = amount/(3.14*(self.radius**2))    # Altura do volume de líquido inicial (dm)
-        self.currentHeight = self.height                # Altura do volume de líquido instantâneo (dm)
+            # Líquido
+            self.amount = amount                            # Quantidade de líquido (L)
+            self.radius = radius/10                         # Raio do recipiente (dm)
+            self.height = amount/(3.14*(self.radius**2))    # Altura do volume de líquido inicial (dm)
+            self.currentHeight = self.height                # Altura do volume de líquido instantâneo (dm)
 
-        # Base
-        self.baseHeight = baseHeight                    # Altura da base em que está o recipiente (cm)
-        self.eachHeight = (self.disSize[1]+16, self.disSize[1]+16-(self.baseHeight*self.centimeter))    # Altura do chão e da superficie da base (px)
-        self.base = pygame.Surface((self.radius*25*self.centimeter, self.baseHeight*self.centimeter))   
-        pygame.draw.rect(self.base, (210, 105, 30), pygame.Rect(0, 0, self.radius*25*self.centimeter, self.baseHeight*self.centimeter))
-        pygame.draw.line(self.base, (0, 0, 0), (0, 0), (self.radius*25*self.centimeter, 0))
-        pygame.draw.line(self.base, (0, 0, 0), (self.radius*25*self.centimeter-1, 0), (self.radius*25*self.centimeter-1, self.baseHeight*self.centimeter))
-        self.holes = [i*(self.height/5) for i in range(1, 5)]                   # Altura dos buracos em relação ao recipiente (dm)
-        self.holesHeights = [(i*10 + self.baseHeight)/100 for i in self.holes]  # Altura dos buracos em relação ao chão (m)
-        self.times = [math.sqrt(2*i/9.8) for i in self.holesHeights]            # Tempo de caída da altura de um buraco até o chão (s)
-        self.updatePressure()
-        self.font = pygame.font.SysFont('Times New Roman', 18)
-        self.display = display
-        self.frame = pygame.image.load('Images\Frame.png')
-        self.start = False
-        self.finished = False
-        self.pause = False
+            # Base
+            self.baseHeight = baseHeight                    # Altura da base em que está o recipiente (cm)
+            self.eachHeight = (self.disSize[1]+16, self.disSize[1]+16-(self.baseHeight*self.centimeter))    # Altura do chão e da superficie da base (px)
+            self.base = pygame.Surface((self.radius*25*self.centimeter, self.baseHeight*self.centimeter))   
+            pygame.draw.rect(self.base, (210, 105, 30), pygame.Rect(0, 0, self.radius*25*self.centimeter, self.baseHeight*self.centimeter))
+            pygame.draw.line(self.base, (0, 0, 0), (0, 0), (self.radius*25*self.centimeter, 0))
+            pygame.draw.line(self.base, (0, 0, 0), (self.radius*25*self.centimeter-1, 0), (self.radius*25*self.centimeter-1, self.baseHeight*self.centimeter))
+            self.holes = [i*(self.height/5) for i in range(1, 5)]                   # Altura dos buracos em relação ao recipiente (dm)
+            self.holesHeights = [(i*10 + self.baseHeight)/100 for i in self.holes]  # Altura dos buracos em relação ao chão (m)
+            self.times = [math.sqrt(2*i/9.8) for i in self.holesHeights]            # Tempo de caída da altura de um buraco até o chão (s)
+            self.updatePressure()
+            self.font = pygame.font.SysFont('Times New Roman', 18)
+            self.display = display
+            self.frame = pygame.image.load('Images\Frame.png')
+            self.start = False
+            self.finished = False
+            self.pause = False
+        except:
+            self.__init__(20, 10, 10, display)
 
     def update(self):
         if not self.start or self.finished or self.pause:

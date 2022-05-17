@@ -16,8 +16,6 @@ display = pygame.display.set_mode((screen_width, screen_height))        # tela d
 pygame.display.set_caption('Hidrodinamics')   
 liqSpec = (20, 10, 10, display)    #amount, radius, baseHeight, display 
 liq = Liquid(*liqSpec)
-liq.defineHoles(10, 20, 30)
-#liq.defineHoleRad(5)
 liq.putOnScreen()
 
 running = True                      # Variável de looping
